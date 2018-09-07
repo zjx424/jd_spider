@@ -4,12 +4,13 @@ from scrapy_splash import SplashRequest
 import re
 
 from splash_examples.items import JdItem
+key = input("请输入所需要爬取的内容：")
 class JdBookSpider(scrapy.Spider):
-    name = 'jdphone'
 
+    name='jd'
 
-    num = range(1,202,2)
-    start_urls = ['https://search.jd.com/Search?keyword=手机&enc=utf-8&page=%d' % i for i in num]
+    start_urls = [('https://search.jd.com/Search?keyword=%s' % key+ '&enc=utf-8&page=%d' )% i for i in range(1, 202, 2)]
+
     def start_requests(self):
         script = '''
                     function main(splash)
@@ -51,13 +52,19 @@ class JdBookSpider(scrapy.Spider):
         item['price_url'] = 'http://pm.3.cn/prices/pcpmgets?callback=jQuery&skuids=%s' % id
         item['title']=response.xpath('//div[@class="sku-name"]/text()').extract_first().strip()
         item['brand']=response.xpath('//ul[@class="p-parameter-list"]/li/@title').extract_first()
-        item['分辨率']=response.xpath('//li[@class="fore0"]//div[@class="detail"]/p/@title').extract_first()
-        item['后置摄像头']=response.xpath('//li[@class="fore1"]//div[@class="detail"]/p/@title').extract()[0]
-        item['前置摄像头'] = response.xpath('//li[@class="fore1"]//div[@class="detail"]/p/@title').extract()[1]
-        item['cpu型号'] = response.xpath('//div[@class="Ptable"]/div[@class="Ptable-item"][4]/dl/dd[4]/text()').extract_first()
-        item['ROM'] = response.xpath('//div[@class="Ptable"]/div[@class="Ptable-item"][6]/dl/dd[2]/text()').extract_first()
-        item['主屏幕尺寸']=response.xpath('//div[@class="Ptable"]/div[@class="Ptable-item"][7]/dl/dd[1]/text()').extract_first()
-        item['RAM'] = response.xpath('//div[@class="Ptable"]/div[@class="Ptable-item"][6]/dl/dd[4]/text()').extract_first()
+        d_t = response.xpath('//div[@class="Ptable-item"]//dt/text()').extract()
+        dt = []
+        for each in d_t:
+            dt.append(each.replace('.', '_'))
+        d_d = response.xpath('//div[@class="Ptable-item"]//dd/text()').extract()
+        dd = []
+        for each in d_d:
+            dd.append(each.replace('\n', '').replace(' ', ''))
+
+        while '' in dd:
+            dd.remove('')
+        item['detail'] = dict(zip(dt, dd))
+
         yield scrapy.Request(url=item['price_url'],meta={'item':item},callback=self.parse_price)
 
     def parse_price(self,response):
