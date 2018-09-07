@@ -10,7 +10,7 @@
 #     https://doc.scrapy.org/en/latest/topics/spider-middleware.html
 
 BOT_NAME = 'splash_examples'
-
+from splash_examples.spiders.jd import key
 # MONGODB 主机名
 MONGODB_HOST = "127.0.0.1"
 # MONGODB 端口号
@@ -18,7 +18,7 @@ MONGODB_PORT = 27017
 # 数据库名称
 MONGODB_DBNAME = "京东"
 # 存放数据的表名称
-MONGODB_SHEETNAME = "手机"
+MONGODB_SHEETNAME = str(key)
 # SPLASH_URL = 'http://192.168.99.100:8050/'
 # DOWNLOADER_MIDDLEWARES = {
 #     'scrapy_splash.SplashCookiesMiddleware': 723,
